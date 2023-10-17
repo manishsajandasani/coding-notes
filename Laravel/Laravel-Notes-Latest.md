@@ -1910,3 +1910,122 @@ php artisan migrate
     - Login Type: Admin, Table: admins
     - Login Type: User, Table: users
     - Login Type: Employee, Table: employees
+
+# Laravel Conventions
+
+- Model
+
+```
+Pascal Case and Singular - User, Admin, UgcNetPaper
+php artisan make:model UgcNetPaper
+php artisan make:model UgcNetPaper -m        [ugc_net_papers]
+php artisan make:model UgcNetPaper -ms       [ugc_net_papers, UgcNetPaperSeeder]
+php artisan migrate
+php artisan migrate:rollback
+php artisan migrate:rollback --step=1
+php artisan migrate:rollback --step=2
+php artisan migrate:rollback --step=3
+php artisan migrate:fresh
+```
+
+- Migration (Table)
+
+```
+Lower Case and Plural - users, admins, ugc_net_papers, properties
+php artisan make:migration create_users_table
+php artisan make:migration create_ugc_net_papers_table
+php artisan make:migration create_properties_table
+
+php artisan make:migration add_percentage_column_to_students_table --table=students
+php artisan make:migration modifications_to_students_table --table=students
+php artisan make:migration modify_email_column --table=students
+```
+
+- Seeder
+
+```
+Pascal Case and Singular - UserSeeder, AdminSeeder, UgcNetPaperSeeder
+php artisan make:seeder UserSeeder
+php artisan db:seed --class=UserSeeder
+```
+
+- Controller
+
+```
+Pascal Case and Singular/Plural (Entity) - FrontUsersController, FrontAdminsController, AdminCategoriesController
+php artisan make:controller Front/FrontUsersController
+php artisan make:controller Admin/AdminDoctorsController
+php artisan make:controller Auth/AdminAuthController
+php artisan make:controller Auth/AuthEditorController
+```
+
+- Middleware
+
+```
+Pascal Case and Singular (Entity) - AdminAuthMiddleware, AdminLoggedin
+php artisan make:middleware AdminAuthMiddleware
+php artisan make:middleware AdminLoggedin
+```
+
+- Component
+
+```
+Pascal Case and Singular (Entity) - AdminFooter, AdminHeader, FrontMobNavigation, FrontWebNavigation
+php artisan make:component AdminFooter
+```
+
+- Helpers
+
+```
+create Helpers folder in app directory
+create helper_functions.php file in the Helpers folder
+register the helper file in composer.json file
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "app/Helpers/helper_functions.php"
+        ]
+    },
+cmd: composer dump-autoload
+```
+
+- JSON
+
+```
+create json folder in database directory
+create plural form json files with .json extension
+```
+
+- Guards
+
+```
+config/auth.php file
+
+'guards' => [
+    'web' => [
+        'driver' => 'session',
+        'provider' => 'users',
+    ],
+
+    'admin' => [
+        'driver' => 'session',
+        'provider' => 'admins',
+    ],
+],
+
+'providers' => [
+    'users' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\User::class,
+    ],
+
+    'admins' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\Admin::class,
+    ],
+],
+```
