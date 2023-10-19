@@ -2029,3 +2029,142 @@ config/auth.php file
     ],
 ],
 ```
+
+# To solve the problem of rememberToken in Logout Add functions in Auth/LoginController:
+
+```
+function get_guard(){
+    if(Auth::guard('web')->check()){
+        return "web";
+    }
+    elseif(Auth::guard('manager')->check()){
+        return "manager";
+    }
+    elseif(Auth::guard('client')->check()){
+        return "client";
+    }
+    return "web";
+}
+
+public function logout(){
+    $guard = $this->get_guard();
+    switch ($guard) {
+        case 'admin': Auth::guard('admin')->logout(); break;
+        case 'web' : Auth::guard('web')->logout(); break;
+        default : Auth::guard('web')->logout(); break;
+    }
+    return redirect()->guest(route("login"));
+}
+```
+
+# Basic Laravel API CRUD
+
+```
+api.php file
+Route::get('/students', [StudentController::class, 'student_index']);
+Route::post('/students', [StudentController::class, 'student_store']);
+Route::put('/students/edit/{id}', [StudentController::class, 'student_update']);
+Route::delete('/students/delete/{id}', [StudentController::class, 'student_delete']);
+
+StudentController.php file
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Student;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class StudentController extends Controller
+{
+    public function student_index() {
+        return response()->json([
+            'status' => 200,
+            'students' => Student::all()
+        ], 200);
+    }
+
+    public function student_store(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:students',
+            'contact' => 'required|digits:10',
+        ], [
+            'name.required' => "Name is required.",
+            'email.required' => "Email is required.",
+            'email.email' => "Enter valid email address.",
+            'contact.required' => "Contact is required.",
+            'contact.digits' => "Contact should be 10 digits long in length.",
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'message' => $validator->messages()
+            ], 422);
+        }
+
+        Student::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'contact' => $request->contact
+        ]);
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Record Added Successfully.'
+        ], 200);
+    }
+
+    public function student_update(Request $request, $id) {
+        $validator = Validator::make($request->all(), [
+            'email' => 'email|unique:students',
+            'contact' => 'digits:10',
+        ], [
+            'email.email' => "Enter valid email address.",
+            'contact.digits' => "Contact should be 10 digits long in length.",
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'message' => $validator->messages()
+            ], 422);
+        }
+
+        $student = Student::find($id);
+        if($request->name) {
+            $student->name = $request->name;
+        }
+        if($request->email) {
+            $student->email = $request->email;
+        }
+        if($request->contact) {
+            $student->contact = $request->contact;
+        }
+        $student->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Record Updated Successfully.'
+        ], 200);
+    }
+
+    public function student_delete($id) {
+        $student = Student::find($id);
+        if($student) {
+            $student->delete();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Record Deleted Successfully.'
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Unauthorized Access.'
+            ], 422);
+        }
+
+    }
+}
+```
